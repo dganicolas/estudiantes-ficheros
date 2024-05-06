@@ -1,8 +1,10 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.onClick
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -43,6 +45,34 @@ fun Toast(message: String, onDismiss: () -> Unit) {
     }
 }
 
+@Composable
+fun actualizar_estado(message:String,onDismiss: () -> Unit,onclickActualizarTexto: () -> Unit, onClickNoHacerNada:() -> Unit){
+    Dialog(
+        title = "Atención",
+        resizable = false,
+        onCloseRequest = onDismiss
+    ){
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize().padding(16.dp)
+        ) {
+            Text(message)
+            Row{
+               Button(
+                   onClick = onclickActualizarTexto
+               ) {
+                   Text("Aceptar")
+               }
+                Button(
+                    onClick = onClickNoHacerNada
+                ) {
+                    Text("Denegar")
+                }
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun campoDeTextoYBotonNuevosEstudiantes(
@@ -64,7 +94,7 @@ fun campoDeTextoYBotonNuevosEstudiantes(
                 label = { Text("New student name") },
                 value = textState,
                 singleLine = true,
-                onValueChange = refrescarTexto,
+                onValueChange = {refrescarTexto(it)},
                 modifier = Modifier.focusRequester(focusRequester).onKeyEvent { event ->
                     if (event.type == KeyEventType.KeyUp && event.key == Key.Enter) {
                         agregarStudents()
@@ -85,8 +115,9 @@ fun campoDeTextoYBotonNuevosEstudiantes(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun campoDeListaYBotonDelete(lista: MutableList<String>) {
+fun campoDeListaYBotonDelete(lista: MutableList<String>, onclickeliminar:(numero:Int)->Unit,onclickrefrescartexto:(numero:Int) ->Unit ) {
     Column(
         modifier = Modifier.background(color = Color.Gray).fillMaxHeight(0.9f)
     ) {
@@ -96,15 +127,17 @@ fun campoDeListaYBotonDelete(lista: MutableList<String>) {
         ) {
             itemsIndexed(lista) { index, item ->
                 Row(
+
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp)
+                        .onClick { onclickrefrescartexto(index) }
                 ) {
                     Text(text = item)
                     Spacer(modifier = Modifier.weight(1f).widthIn(min = 450.dp, max = 450.dp))
                     IconButton(
                         onClick = {
-                            lista.removeAt(index)
+                            onclickeliminar(index)
                         }
                     ) {
                         Icon(
@@ -134,10 +167,13 @@ fun campoDeSalvarDatos(guardarDatos: () -> Unit) {
 
 @Composable
 @Preview
-fun ventanaPrincipal(ficheros: IGestorFicheros,viewModel: ViewModel) {
+fun ventanaPrincipal(viewModel: ViewModel) {
 
-    val textState = viewModel.textState.toString()
+    val textState = viewModel.textState.value
     val lista = viewModel.lista
+    val toasta = viewModel.toasta
+    val mensaje = viewModel.mensaje
+    val ventanatexto = viewModel.ventanatexto.value
 
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) {
@@ -157,13 +193,13 @@ fun ventanaPrincipal(ficheros: IGestorFicheros,viewModel: ViewModel) {
                 refrescarTexto = { viewModel.refrescarTexto(it) },
                 agregarStudents = {
                     if (textState.isNotBlank()) {
-                        lista.add(textState)
-                        textState = ""
+                        viewModel.agregarEstudiante(textState)
+                        viewModel.refrescarTexto("")
                         focusRequester.requestFocus()
                     } else {
-                        mensaje = "ERROR no se puede añadir datos vacios"
-                        toasta = true
-                        textState = ""
+                        viewModel.refrescarMensaje("ERROR no se puede añadir datos vacios")
+                        viewModel.refrescarToasta(true)
+                        viewModel.refrescarTexto("")
                     }
 
                 }
@@ -175,29 +211,39 @@ fun ventanaPrincipal(ficheros: IGestorFicheros,viewModel: ViewModel) {
                 )
             ) {
                 campoDeListaYBotonDelete(
-                    lista = lista
+                    lista = lista,
+                    onclickeliminar = { index -> viewModel.eliminarEstudiante(index)},
+                    onclickrefrescartexto = {index->
+                        viewModel.refrescarMensaje("¿Cual es el nuevo nombre?")
+                        viewModel.refrescarEstadoPantallaEstudiante(true)
+                        if(ventanatexto)
+                            actualizar_estado(
+                                message = mensaje,
+                                onDismiss = {viewModel.refrescarEstadoPantallaEstudiante(false)},
+                                onclickActualizarTexto = ,
+                                onClickNoHacerNada = )
+                        viewModel.refrescartextoestudiante(index,texto)
+                    }
                 )
             }
 
         }
+
         campoDeSalvarDatos(
             guardarDatos = {
-                mensaje = "datos guardados"
-                toasta = true
-                File("src/main/recursos/alumnos.txt").writeText("")
-                lista.forEach {
-                    if (lista.size == 1) {
-                        ficheros.escribir(File("src/main/recursos/alumnos.txt"),it)
-                        .appendText("$it")
-                    } else {
-                        File("src/main/recursos/alumnos.txt").appendText("$it\n")
-                    }
+                if(viewModel.guardarEstudiantes()){
+                    viewModel.refrescarMensaje("datos guardados")
+                    viewModel.refrescarToasta(true)
+                }else{
+                    viewModel.refrescarMensaje("Hubo un error")
+                    viewModel.refrescarToasta(true)
                 }
+
             }
         )
-        if (toasta) {
-            Toast(mensaje) {
-                toasta = false
+        if (toasta.value) {
+            Toast(mensaje.value) {
+                viewModel.refrescarToasta(false)
             }
             focusRequester.requestFocus()
 

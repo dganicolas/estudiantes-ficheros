@@ -3,10 +3,10 @@ import androidx.compose.ui.window.application
 
 
 fun main() = application {
-    val viewModel = ViewModel()
     val gestor = GestorFicheros()
+    val viewModel = ViewModel(gestor)
     Window(onCloseRequest = ::exitApplication) {
-        ventanaPrincipal(gestor,viewModel)
+        ventanaPrincipal(viewModel)
     }
 
 }
