@@ -274,7 +274,7 @@ fun ventanaPrincipal(viewModel: ViewModel) {
                     refrescarTexto = { viewModel.refrescarTexto(it) },
                     textState= textState,
                     focusRequester = focusRequester ,
-                    agregarStudents = {index,text -> viewModel.refrescartextoestudiante(index, text) })
+                    agregarStudents =  {index,text -> viewModel.refrescartextoestudiante(index, text) })
 
         }
 }
