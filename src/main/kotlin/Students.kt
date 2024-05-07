@@ -21,6 +21,7 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.delay
+import java.awt.TextField
 import java.io.File
 
 @Composable
@@ -45,8 +46,16 @@ fun Toast(message: String, onDismiss: () -> Unit) {
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun actualizar_estado(message:String,onDismiss: () -> Unit,onclickActualizarTexto: () -> Unit, onClickNoHacerNada:() -> Unit){
+fun actualizar_estado(message:String,
+                      onDismiss: () -> Unit,
+                      onclickActualizarTexto: () -> Unit,
+                      onClickNoHacerNada:() -> Unit,
+                      refrescarTexto :(String) -> Unit,
+                      textState: String,
+                      focusRequester: FocusRequester,
+                      agregarStudents: (index:Int,texto:String) -> Unit){
     Dialog(
         title = "Atención",
         resizable = false,
@@ -57,6 +66,20 @@ fun actualizar_estado(message:String,onDismiss: () -> Unit,onclickActualizarText
             modifier = Modifier.fillMaxSize().padding(16.dp)
         ) {
             Text(message)
+            OutlinedTextField(
+                label = { Text("cambiarnombre") },
+                value = textState,
+                singleLine = true,
+                onValueChange = {refrescarTexto(it)},
+                modifier = Modifier.focusRequester(focusRequester).onKeyEvent { event ->
+                    if (event.type == KeyEventType.KeyUp && event.key == Key.Enter) {
+                        agregarStudents(1,textState)
+                        true
+                    } else {
+                        false
+                    }
+                }
+            )
             Row{
                Button(
                    onClick = onclickActualizarTexto
@@ -171,8 +194,8 @@ fun ventanaPrincipal(viewModel: ViewModel) {
 
     val textState = viewModel.textState.value
     val lista = viewModel.lista
-    val toasta = viewModel.toasta
-    val mensaje = viewModel.mensaje
+    val toasta = viewModel.toasta.value
+    val mensaje = viewModel.mensaje.value
     val ventanatexto = viewModel.ventanatexto.value
 
     val focusRequester = remember { FocusRequester() }
@@ -213,16 +236,10 @@ fun ventanaPrincipal(viewModel: ViewModel) {
                 campoDeListaYBotonDelete(
                     lista = lista,
                     onclickeliminar = { index -> viewModel.eliminarEstudiante(index)},
-                    onclickrefrescartexto = {index->
+                    onclickrefrescartexto = { index ->
                         viewModel.refrescarMensaje("¿Cual es el nuevo nombre?")
                         viewModel.refrescarEstadoPantallaEstudiante(true)
-                        if(ventanatexto)
-                            actualizar_estado(
-                                message = mensaje,
-                                onDismiss = {viewModel.refrescarEstadoPantallaEstudiante(false)},
-                                onclickActualizarTexto = ,
-                                onClickNoHacerNada = )
-                        viewModel.refrescartextoestudiante(index,texto)
+                        viewModel.refrescarTexto("")
                     }
                 )
             }
@@ -241,14 +258,23 @@ fun ventanaPrincipal(viewModel: ViewModel) {
 
             }
         )
-        if (toasta.value) {
-            Toast(mensaje.value) {
+        if (toasta) {
+            Toast(mensaje) {
                 viewModel.refrescarToasta(false)
             }
             focusRequester.requestFocus()
 
         }
-    }
+            if(ventanatexto)
+                actualizar_estado(
+                    message = mensaje,
+                    onDismiss = {viewModel.refrescarEstadoPantallaEstudiante(false)},
+                    onclickActualizarTexto = TODO(),
+                    onClickNoHacerNada = TODO(),
+                    refrescarTexto = { viewModel.refrescarTexto(it) },
+                    textState= textState,
+                    focusRequester = focusRequester ,
+                    agregarStudents = {index,text -> viewModel.refrescartextoestudiante(index, text) })
 
-
+        }
 }
