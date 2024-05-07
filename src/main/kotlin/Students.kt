@@ -48,44 +48,47 @@ fun Toast(message: String, onDismiss: () -> Unit) {
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun actualizar_estado(message:String,
-                      onDismiss: () -> Unit,
-                      onclickActualizarTexto: () -> Unit,
-                      onClickNoHacerNada:() -> Unit,
-                      refrescarTexto :(String) -> Unit,
-                      textState: String,
-                      focusRequester: FocusRequester,
-                      agregarStudents: (index:Int,texto:String) -> Unit){
+fun actualizar_estado(
+    message: String,
+    onDismiss: () -> Unit,
+    onclickActualizarTexto: () -> Unit,
+    onClickNoHacerNada: () -> Unit,
+    refrescarTexto: (String) -> Unit,
+    textState: String,
+    focusRequester: FocusRequester,
+    agregarStudents: () -> Unit
+) {
     Dialog(
         title = "Atención",
         resizable = false,
         onCloseRequest = onDismiss
-    ){
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize().padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxHeight(0.8f),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(message)
             OutlinedTextField(
                 label = { Text("cambiarnombre") },
                 value = textState,
                 singleLine = true,
-                onValueChange = {refrescarTexto(it)},
+                onValueChange = { refrescarTexto(it) },
                 modifier = Modifier.focusRequester(focusRequester).onKeyEvent { event ->
                     if (event.type == KeyEventType.KeyUp && event.key == Key.Enter) {
-                        agregarStudents(1,textState)
+                        agregarStudents
                         true
                     } else {
                         false
                     }
                 }
             )
-            Row{
-               Button(
-                   onClick = onclickActualizarTexto
-               ) {
-                   Text("Aceptar")
-               }
+            Row {
+                Button(
+                    onClick = onclickActualizarTexto
+                ) {
+                    Text("Aceptar")
+                }
                 Button(
                     onClick = onClickNoHacerNada
                 ) {
@@ -117,7 +120,7 @@ fun campoDeTextoYBotonNuevosEstudiantes(
                 label = { Text("New student name") },
                 value = textState,
                 singleLine = true,
-                onValueChange = {refrescarTexto(it)},
+                onValueChange = { refrescarTexto(it) },
                 modifier = Modifier.focusRequester(focusRequester).onKeyEvent { event ->
                     if (event.type == KeyEventType.KeyUp && event.key == Key.Enter) {
                         agregarStudents()
@@ -140,7 +143,11 @@ fun campoDeTextoYBotonNuevosEstudiantes(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun campoDeListaYBotonDelete(lista: MutableList<String>, onclickeliminar:(numero:Int)->Unit,onclickrefrescartexto:(numero:Int) ->Unit ) {
+fun campoDeListaYBotonDelete(
+    lista: MutableList<String>,
+    onclickeliminar: (numero: Int) -> Unit,
+    onclickrefrescartexto: (numero: Int) -> Unit
+) {
     Column(
         modifier = Modifier.background(color = Color.Gray).fillMaxHeight(0.9f)
     ) {
@@ -208,8 +215,9 @@ fun ventanaPrincipal(viewModel: ViewModel) {
         ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
+        if(!ventanatexto)
         Row {
+
             campoDeTextoYBotonNuevosEstudiantes(
                 textState = textState,
                 focusRequester = focusRequester,
@@ -235,11 +243,12 @@ fun ventanaPrincipal(viewModel: ViewModel) {
             ) {
                 campoDeListaYBotonDelete(
                     lista = lista,
-                    onclickeliminar = { index -> viewModel.eliminarEstudiante(index)},
+                    onclickeliminar = { index -> viewModel.eliminarEstudiante(index) },
                     onclickrefrescartexto = { index ->
+                        viewModel.refrescarTexto("")
                         viewModel.refrescarMensaje("¿Cual es el nuevo nombre?")
                         viewModel.refrescarEstadoPantallaEstudiante(true)
-                        viewModel.refrescarTexto("")
+                        viewModel.refrescarPosicion(index)
                     }
                 )
             }
@@ -248,10 +257,10 @@ fun ventanaPrincipal(viewModel: ViewModel) {
 
         campoDeSalvarDatos(
             guardarDatos = {
-                if(viewModel.guardarEstudiantes()){
+                if (viewModel.guardarEstudiantes()) {
                     viewModel.refrescarMensaje("datos guardados")
                     viewModel.refrescarToasta(true)
-                }else{
+                } else {
                     viewModel.refrescarMensaje("Hubo un error")
                     viewModel.refrescarToasta(true)
                 }
@@ -265,16 +274,17 @@ fun ventanaPrincipal(viewModel: ViewModel) {
             focusRequester.requestFocus()
 
         }
-            if(ventanatexto)
-                actualizar_estado(
-                    message = mensaje,
-                    onDismiss = {viewModel.refrescarEstadoPantallaEstudiante(false)},
-                    onclickActualizarTexto = TODO(),
-                    onClickNoHacerNada = TODO(),
-                    refrescarTexto = { viewModel.refrescarTexto(it) },
-                    textState= textState,
-                    focusRequester = focusRequester ,
-                    agregarStudents = { index,text -> viewModel.refrescartextoestudiante(index, text) })
+        if (ventanatexto) {
+            actualizar_estado(
+                message = mensaje,
+                onDismiss = { viewModel.refrescarEstadoPantallaEstudiante(false) },
+                onclickActualizarTexto = { viewModel.refrescartextoestudiante(textState) },
+                onClickNoHacerNada = { viewModel.refrescarEstadoPantallaEstudiante(false) },
+                refrescarTexto = { viewModel.refrescarTexto(it)},
+                textState = textState,
+                focusRequester = focusRequester,
+                agregarStudents = { viewModel.refrescartextoestudiante(mensaje) })
 
         }
+    }
 }
