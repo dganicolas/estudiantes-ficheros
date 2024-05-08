@@ -2,7 +2,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 
 interface IViewModel {
-    val ficheros: IGestorFicheros
     val _lista: MutableList<String>
     val lista: MutableList<String>
     var _toasta: MutableState<Boolean>

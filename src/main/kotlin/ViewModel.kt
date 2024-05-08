@@ -2,7 +2,7 @@ import androidx.compose.runtime.*
 import java.io.File
 
 class ViewModel(
-    override val ficheros: IGestorFicheros
+    val ficheros: IGestorFicheros
 ) : IViewModel {
     override val _lista = ficheros.leer(File("src/main/recursos/alumnos.txt"))
     override val lista = _lista

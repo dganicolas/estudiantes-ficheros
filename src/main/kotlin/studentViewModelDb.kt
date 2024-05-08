@@ -1,12 +1,13 @@
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import java.io.File
 
 class studentViewModelDb(
-    override val ficheros: IGestorFicheros
-) :IViewModel {
-    override val _lista = ficheros.leer(File("src/main/recursos/alumnos.txt"))
+    val dataBase: IStudentsRepository
+) : IViewModel {
+    override val _lista = mutableStateListOf("")
     override val lista = _lista
 
     override var _toasta = mutableStateOf(false)
@@ -23,40 +24,63 @@ class studentViewModelDb(
     override var _ventanatexto = mutableStateOf(false)
     override val ventanatexto = _ventanatexto
 
+    init {
+        cargaralumnos()
+    }
+
+    fun cargaralumnos() {
+        val result = StudentsRepository().getAllStudents()
+        try {
+            result.onSuccess {
+                it.forEach { estudiante ->
+                    _lista.add(estudiante)
+                }
+            }.onFailure {
+                throw it
+            }
+        } catch (e: Exception) {
+            _lista.add("reinicia la app")
+        }
+
+    }
 
     override fun refrescarTexto(texto: String) {
-        TODO("Not yet implemented")
+        _textState.value = texto
     }
 
     override fun refrescarMensaje(texto: String) {
-        TODO("Not yet implemented")
+        _mensaje.value = texto
     }
 
     override fun refrescarToasta(estado: Boolean) {
-        TODO("Not yet implemented")
+        _toasta.value = estado
     }
 
     override fun eliminarEstudiante(posicion: Int) {
-        TODO("Not yet implemented")
+        _lista.removeAt(posicion)
     }
 
     override fun agregarEstudiante(estudiante: String) {
-        TODO("Not yet implemented")
+        _lista.add(estudiante)
     }
 
     override fun guardarEstudiantes(): Boolean {
-        TODO("Not yet implemented")
+        var estado = false
+        val rs = dataBase.updateStudents(_lista)
+        rs.onSuccess { estado = true }.onFailure { estado = false }
+        return estado
+
     }
 
     override fun refrescartextoestudiante(texto: String) {
-        TODO("Not yet implemented")
+        _lista[posicion.value] = texto
     }
 
     override fun refrescarPosicion(posicion: Int) {
-        TODO("Not yet implemented")
+        _posicion.value = posicion
     }
 
     override fun refrescarEstadoPantallaEstudiante(estado: Boolean) {
-        TODO("Not yet implemented")
+        _ventanatexto.value = estado
     }
 }

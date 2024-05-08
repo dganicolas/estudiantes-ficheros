@@ -37,7 +37,7 @@ fun main() = application {
             )
         } else {
             val viewModel = if(opcionsql.value ){
-                studentViewModelDb(gestor)
+                studentViewModelDb(StudentsRepository())
             }else{
                 ViewModel(gestor)
 
