@@ -49,7 +49,7 @@ class ViewModel(
         _lista[posicion.value]=texto
     }
 
-    fun refrescarPosicion(posicion: Int){
+    override fun refrescarPosicion(posicion: Int){
         _posicion.value = posicion
     }
     override fun refrescarEstadoPantallaEstudiante(estado:Boolean){

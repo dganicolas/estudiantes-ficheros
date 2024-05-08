@@ -21,8 +21,6 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.delay
-import java.awt.TextField
-import java.io.File
 
 @Composable
 fun Toast(message: String, onDismiss: () -> Unit) {
@@ -73,15 +71,7 @@ fun actualizar_estado(
                 label = { Text("cambiarnombre") },
                 value = textState,
                 singleLine = true,
-                onValueChange = { refrescarTexto(it) },
-                modifier = Modifier.focusRequester(focusRequester).onKeyEvent { event ->
-                    if (event.type == KeyEventType.KeyUp && event.key == Key.Enter) {
-                        agregarStudents
-                        true
-                    } else {
-                        false
-                    }
-                }
+                onValueChange = { refrescarTexto(it) }
             )
             Row {
                 Button(
@@ -114,7 +104,7 @@ fun campoDeTextoYBotonNuevosEstudiantes(
     ) {
 
         Column(
-            modifier = Modifier.background(color = Color.Blue)
+            modifier = Modifier.background(color = Color.Cyan)
         ) {
             OutlinedTextField(
                 label = { Text("New student name") },
@@ -197,7 +187,7 @@ fun campoDeSalvarDatos(guardarDatos: () -> Unit) {
 
 @Composable
 @Preview
-fun ventanaPrincipal(viewModel: ViewModel) {
+fun ventanaPrincipal(viewModel: IViewModel) {
 
     val textState = viewModel.textState.value
     val lista = viewModel.lista
@@ -212,7 +202,7 @@ fun ventanaPrincipal(viewModel: ViewModel) {
     Column(
         modifier = Modifier.fillMaxWidth().fillMaxHeight().padding(
             top = 30.dp
-        ),
+        ).background(Color.Gray),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if(!ventanatexto)
@@ -285,6 +275,55 @@ fun ventanaPrincipal(viewModel: ViewModel) {
                 focusRequester = focusRequester,
                 agregarStudents = { viewModel.refrescartextoestudiante(mensaje) })
 
+        }
+    }
+}
+
+
+
+
+@Preview
+@Composable
+fun ventanaEleccion(
+    onclickAceptarOpcion:()->Unit,
+    opcionsql:Boolean,
+    opciontxt:Boolean,
+    oncheckedOpcionSql:(Boolean)-> Unit,
+    oncheckedOpcionTxt:(Boolean)-> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxHeight().fillMaxWidth()
+    ){
+        Column (
+            modifier = Modifier.background(Color.Gray),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Row {
+                Checkbox(
+                    checked = opciontxt,
+                    onCheckedChange = { oncheckedOpcionTxt(opciontxt) }
+                )
+                Text("local")
+            }
+
+            Row {
+                Checkbox(
+                    checked = opcionsql,
+                    onCheckedChange = { oncheckedOpcionSql(opcionsql) }
+                )
+                Text("bases de datos")
+            }
+
+            Row(
+
+            ){
+                Button(
+                    onClick = onclickAceptarOpcion
+                ){
+                    Text("Aceptar")
+                }
+            }
         }
     }
 }

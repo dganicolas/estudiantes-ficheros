@@ -20,5 +20,6 @@ interface IViewModel {
     fun agregarEstudiante(estudiante: String)
     fun guardarEstudiantes(): Boolean
     fun refrescartextoestudiante(texto: String)
+    fun refrescarPosicion(posicion: Int)
     fun refrescarEstadoPantallaEstudiante(estado: Boolean)
 }
