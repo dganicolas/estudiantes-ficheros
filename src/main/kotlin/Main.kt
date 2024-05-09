@@ -33,6 +33,11 @@ fun main() = application {
                             opcionsql.value = false
                         }
 
+                },
+                onenabledbotonaceptar = if (!opcionsql.value && !opcionlocal.value){
+                    false
+                }else{
+                    true
                 }
             )
         } else {

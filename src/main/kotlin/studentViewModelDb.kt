@@ -7,7 +7,7 @@ import java.io.File
 class studentViewModelDb(
     val dataBase: IStudentsRepository
 ) : IViewModel {
-    override val _lista = mutableStateListOf("")
+    override val _lista = mutableStateListOf<String>()
     override val lista = _lista
 
     override var _toasta = mutableStateOf(false)
@@ -33,7 +33,7 @@ class studentViewModelDb(
         try {
             result.onSuccess {
                 it.forEach { estudiante ->
-                    _lista.add(estudiante)
+                        _lista.add(estudiante)
                 }
             }.onFailure {
                 throw it

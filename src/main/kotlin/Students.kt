@@ -61,10 +61,10 @@ fun actualizar_estado(
         resizable = false,
         onCloseRequest = onDismiss
     ) {
-        Row(
+        Column(
             modifier = Modifier.fillMaxHeight(0.8f),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             Text(message)
             OutlinedTextField(
@@ -268,7 +268,7 @@ fun ventanaPrincipal(viewModel: IViewModel) {
             actualizar_estado(
                 message = mensaje,
                 onDismiss = { viewModel.refrescarEstadoPantallaEstudiante(false) },
-                onclickActualizarTexto = { viewModel.refrescartextoestudiante(textState) },
+                onclickActualizarTexto = { viewModel.refrescartextoestudiante(textState);viewModel.refrescarEstadoPantallaEstudiante(false) },
                 onClickNoHacerNada = { viewModel.refrescarEstadoPantallaEstudiante(false) },
                 refrescarTexto = { viewModel.refrescarTexto(it)},
                 textState = textState,
@@ -289,7 +289,8 @@ fun ventanaEleccion(
     opcionsql:Boolean,
     opciontxt:Boolean,
     oncheckedOpcionSql:(Boolean)-> Unit,
-    oncheckedOpcionTxt:(Boolean)-> Unit
+    oncheckedOpcionTxt:(Boolean)-> Unit,
+    onenabledbotonaceptar: Boolean
 ) {
     Surface(
         modifier = Modifier.fillMaxHeight().fillMaxWidth()
@@ -299,31 +300,39 @@ fun ventanaEleccion(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ){
-            Row {
-                Checkbox(
-                    checked = opciontxt,
-                    onCheckedChange = { oncheckedOpcionTxt(opciontxt) }
-                )
-                Text("local")
-            }
-
-            Row {
-                Checkbox(
-                    checked = opcionsql,
-                    onCheckedChange = { oncheckedOpcionSql(opcionsql) }
-                )
-                Text("bases de datos")
-            }
-
-            Row(
-
-            ){
-                Button(
-                    onClick = onclickAceptarOpcion
+            Column {
+                Row (
+                    verticalAlignment = Alignment.CenterVertically
                 ){
-                    Text("Aceptar")
+                    Checkbox(
+                        checked = opciontxt,
+                        onCheckedChange = { oncheckedOpcionTxt(opciontxt) }
+                    )
+                    Text("local")
+                }
+
+                Row (
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    Checkbox(
+                        checked = opcionsql,
+                        onCheckedChange = { oncheckedOpcionSql(opcionsql) }
+                    )
+                    Text("bases de datos")
+                }
+
+                Row(
+
+                ){
+                    Button(
+                        onClick = onclickAceptarOpcion,
+                        enabled = onenabledbotonaceptar
+                    ){
+                        Text("Aceptar")
+                    }
                 }
             }
+
         }
     }
 }
